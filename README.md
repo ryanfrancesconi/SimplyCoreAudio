@@ -1,4 +1,4 @@
-## SPFKAudioHardware
+# SPFKAudioHardware
 
 [![Version](https://img.shields.io/github/v/tag/ryanfrancesconi/spfk-audio-hardware)](https://github.com/ryanfrancesconi/spfk-audio-hardware/tags)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fryanfrancesconi%2Fspfk-audio-hardware%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ryanfrancesconi/spfk-audio-hardware)
@@ -14,29 +14,7 @@ A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction L
 - **Platforms:** macOS 13+
 - **Swift:** 6.2+
 
-### Quick Start
-
-```swift
-import SPFKAudioHardware
-
-// Start the hardware manager (required before any device access)
-let manager = AudioHardwareManager.shared
-try await manager.start()
-
-// Enumerate devices
-let allDevices = try await manager.allDevices()
-let outputs = try await manager.outputDevices()
-
-// Access default devices
-if let defaultOutput = await manager.defaultOutputDevice {
-    print(defaultOutput.name)
-}
-
-// Clean up
-try await manager.unregister()
-```
-
-### Features
+## Features
 
 - **Device enumeration** — query all devices, or filter by input, output, aggregate, Bluetooth, split, and more
 - **Default device management** — get and promote default input, output, and system output devices
@@ -48,7 +26,7 @@ try await manager.unregister()
 - **Property notifications** — typed `AudioDeviceNotification`, `AudioStreamNotification`, and `AudioHardwareNotification` enums dispatched through `NotificationCenter`
 - **Latency and safety offsets** — device, stream, and presentation latency; buffer frame size management
 
-### Architecture
+## Architecture
 
 `AudioHardwareManager` is a singleton actor that owns the device lifecycle. It must be started before use and manages an internal `AudioDeviceCache` and `AudioObjectPool` for efficient device tracking and listener management.
 
@@ -64,6 +42,13 @@ try await manager.unregister()
 | `AudioObjectPool` | Internal singleton caching devices and streams, managing property listeners |
 | `AudioObjectBackend` | Protocol abstracting CoreAudio C API calls — enables hardware-independent testing |
 | `Scope` | Enum (`.input`, `.output`, `.global`, etc.) used throughout for directional property access |
+| `AudioObjectOwner` | Base for an object that owns HAL property listeners and tears them down |
+| `AudioDeviceNamedChannel` | One channel, with its name and terminal type |
+| `StereoPair` | Two channels read as a pair |
+| `VolumeInfo` | Scalar, dB and mute state read together |
+| `DeviceStatusEvent` | A device arriving, leaving or changing, as one value |
+| `TerminalType` / `TransportType` | What a channel is physically, and how the device is attached |
+| `DefaultSelectorType` | Which default role — input, output, system output — a query means |
 
 **Notifications** are delivered as typed enums through `NotificationCenter`:
 
@@ -73,7 +58,7 @@ try await manager.unregister()
 
 **Backend abstraction:** All CoreAudio C API calls are routed through the `AudioObjectBackend` protocol via a global-replaceable accessor. In production, `CoreAudioBackend` delegates directly to the C functions. In tests, `MockAudioBackend` can be swapped in to verify property access logic without hardware. See the [test README](Tests/SPFKAudioHardwareTests/README.md) for details.
 
-### Testing
+## Testing
 
 Tests are organized into three tiers using Swift Testing tags:
 
@@ -93,7 +78,7 @@ swift test --filter "DefinitionTests|MockPropertyTests"
 swift test
 ```
 
-### Dependencies
+## Dependencies
 
 | Package | Purpose |
 |---------|---------|
